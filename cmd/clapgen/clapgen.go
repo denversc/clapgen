@@ -16,8 +16,12 @@
 
 package main
 
-import "fmt"
+import "github.com/Shopify/go-lua"
 
 func main() {
-	fmt.Println("Hello World!")
+	l := lua.NewState()
+	lua.OpenLibraries(l)
+	if err := lua.DoFile(l, "hello.lua"); err != nil {
+		panic(err)
+	}
 }
