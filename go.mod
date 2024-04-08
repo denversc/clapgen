@@ -1,0 +1,3 @@
+module github.com/denversc/clapgen
+
+go 1.21.3
