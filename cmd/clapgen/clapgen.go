@@ -18,6 +18,7 @@ package main
 
 import (
 	_ "embed"
+	"errors"
 	"fmt"
 	"github.com/dop251/goja"
 	"os"
@@ -28,6 +29,11 @@ var configJS string
 
 const configJSFileName = "clapgen.js"
 
+//go:embed preamble.js
+var preambleJS string
+
+const preambleJSFileName = "preamble.js"
+
 func main() {
 	err := run()
 	if err != nil {
@@ -37,10 +43,7 @@ func main() {
 }
 
 func run() error {
-	program, err := goja.Compile(configJSFileName, configJS, true)
-	if err != nil {
-		return fmt.Errorf("compiling JavaScript file failed: %v (%w)", configJSFileName, err)
-	}
+	var err error
 
 	vm := goja.New()
 
@@ -49,20 +52,42 @@ func run() error {
 		return fmt.Errorf("registering JavaScript 'console' object failed: %w", err)
 	}
 
-	result, err := vm.RunProgram(program)
+	err = runJs(preambleJSFileName, preambleJS, vm)
 	if err != nil {
-		return fmt.Errorf("running JavaScript file failed: %v (%w)", configJSFileName, err)
+		return err
 	}
 
-	fmt.Println(configJSFileName, "completed with result:", result.String())
+	err = runJs(configJSFileName, configJS, vm)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(configJSFileName, "completed successfully")
+	return nil
+}
+
+func runJs(name string, jsSource string, vm *goja.Runtime) error {
+	program, err := goja.Compile(name, jsSource, true)
+	if err != nil {
+		return fmt.Errorf("JavaScript compilation failed: %v (%w)", name, err)
+	}
+
+	_, err = vm.RunProgram(program)
+	if err != nil {
+		var jsException *goja.Exception
+		if errors.As(err, &jsException) {
+			fmt.Println(jsException.String())
+		}
+		return fmt.Errorf("JavaScript execution failed: %v (%w)", name, err)
+	}
 
 	return nil
 }
 
-func consoleLog(call goja.FunctionCall) goja.Value {
+func jsConsoleLog(call goja.FunctionCall) goja.Value {
 	printlnArgs := make([]any, 0, 0)
 	for _, arg := range call.Arguments {
-		printlnArgs = append(printlnArgs, arg.Export())
+		printlnArgs = append(printlnArgs, arg.String())
 	}
 	fmt.Println(printlnArgs...)
 	return goja.Null()
@@ -71,10 +96,14 @@ func consoleLog(call goja.FunctionCall) goja.Value {
 func registerConsole(vm *goja.Runtime) error {
 	console := vm.NewObject()
 
-	err := console.Set("log", consoleLog)
+	err := console.Set("log", jsConsoleLog)
 	if err != nil {
 		return err
 	}
 
 	return vm.Set("console", console)
+}
+
+func registerClapgenInit(vm *goja.Runtime) error {
+	return nil
 }
