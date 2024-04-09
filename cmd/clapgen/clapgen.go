@@ -22,10 +22,8 @@ import (
 	"fmt"
 	"github.com/dop251/goja"
 	"os"
+	"unicode/utf8"
 )
-
-//go:embed clapgen.js
-var configJS string
 
 const configJSFileName = "clapgen.js"
 
@@ -43,9 +41,17 @@ func main() {
 }
 
 func run() error {
-	var err error
+	configJsBytes, err := os.ReadFile(configJSFileName)
+	if err != nil {
+		return fmt.Errorf("loading config file failed: %v, (%w)", configJSFileName, err)
+	}
+	if !utf8.Valid(configJsBytes) {
+		return fmt.Errorf("invalid UTF-8 encoded text in config file: %v", configJSFileName)
+	}
+	configJS := string(configJsBytes)
 
 	vm := goja.New()
+	vm.SetFieldNameMapper(goja.TagFieldNameMapper("js", false))
 
 	err = registerConsole(vm)
 	if err != nil {
@@ -62,12 +68,12 @@ func run() error {
 		return err
 	}
 
-	err = validateConfig(vm)
+	config, err := validateConfig(vm)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(configJSFileName, "completed successfully")
+	fmt.Println(configJSFileName, "completed successfully with config:", config)
 	return nil
 }
 
@@ -92,23 +98,26 @@ func runJs(name string, jsSource string, vm *goja.Runtime) error {
 const clapgenInitJsFunctionName = "clapgen_init"
 const clapgenInstanceJsPropertyName = "clapgenInstance"
 
-func validateConfig(vm *goja.Runtime) error {
+func validateConfig(vm *goja.Runtime) (*ClapgenConfig, error) {
 	var value goja.Value
 	exception := vm.Try(func() {
 		value = vm.Get(clapgenInitJsFunctionName)
 	})
 	if exception != nil {
 		fmt.Println(exception.String())
-		return fmt.Errorf("getting '%v' from JavaScript runtime failed: %w", clapgenInitJsFunctionName, exception)
+		return nil, fmt.Errorf("getting '%v' from JavaScript runtime failed: %w",
+			clapgenInitJsFunctionName, exception)
 	}
 	if value == nil {
-		return fmt.Errorf("'%v' not found in JavaScript runtime", clapgenInitJsFunctionName)
+		return nil, fmt.Errorf("'%v' not found in JavaScript runtime",
+			clapgenInitJsFunctionName)
 	}
 
 	var initFunction *goja.Object
 	err := vm.ExportTo(value, &initFunction)
 	if err != nil {
-		return fmt.Errorf("converting '%v' to an object failed: %w", clapgenInitJsFunctionName, err)
+		return nil, fmt.Errorf("converting '%v' to an object failed: %w",
+			clapgenInitJsFunctionName, err)
 	}
 
 	exception = vm.Try(func() {
@@ -116,44 +125,50 @@ func validateConfig(vm *goja.Runtime) error {
 	})
 	if exception != nil {
 		fmt.Println(exception.String())
-		return fmt.Errorf("getting %v.%v from JavaScript runtime failed: %w",
+		return nil, fmt.Errorf("getting %v.%v from JavaScript runtime failed: %w",
 			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, exception)
 	}
 	if value == nil {
-		return fmt.Errorf("property not found: %v.%v (ensure that %v() was called exactly once)",
+		return nil, fmt.Errorf("property not found: %v.%v (ensure that %v() was called exactly once)",
 			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, clapgenInitJsFunctionName)
 	}
 
 	var clapgenJsObject *goja.Object
 	err = vm.ExportTo(value, &clapgenJsObject)
 	if err != nil {
-		return fmt.Errorf("converting %v.%v to an object failed: %w",
+		return nil, fmt.Errorf("converting %v.%v to an object failed: %w",
 			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, err)
 	}
 
 	exception = vm.Try(func() {
-		value = clapgenJsObject.Get("foo")
+		value = clapgenJsObject.Get("_arguments")
 	})
 	if exception != nil {
 		fmt.Println(exception.String())
-		return fmt.Errorf("getting %v.%v.foo from JavaScript runtime failed: %w",
+		return nil, fmt.Errorf("getting %v.%v._arguments from JavaScript runtime failed: %w",
 			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, exception)
 	}
 	if value == nil {
-		return fmt.Errorf("property not found: %v.%v.foo (ensure that %v() was called exactly once)",
+		return nil, fmt.Errorf("property not found: %v.%v._arguments",
 			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, clapgenInitJsFunctionName)
 	}
 
-	var foo int
-	err = vm.ExportTo(value, &foo)
+	config := &ClapgenConfig{}
+	err = vm.ExportTo(value, &config.Arguments)
 	if err != nil {
-		return fmt.Errorf("converting %v.%v.foo to an int failed: %w",
+		return nil, fmt.Errorf("converting %v.%v._arguments failed: %w",
 			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, err)
 	}
 
-	fmt.Println("foo", foo)
+	return config, nil
+}
 
-	return nil
+type ClapgenConfig struct {
+	Arguments []ClapgenArgument `js:"_arguments"`
+}
+
+type ClapgenArgument struct {
+	Name string `js:"name"`
 }
 
 func jsConsoleLog(call goja.FunctionCall) goja.Value {

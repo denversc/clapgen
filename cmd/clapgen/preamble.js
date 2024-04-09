@@ -23,7 +23,19 @@ const clapgen_init = function clapgen_init() {
 
   class Clapgen {
     constructor() {
-      this.foo = 42;
+      this._arguments = [];
+    }
+
+    addArgument(name) {
+      const argument = new ClapgenArgument(name);
+      this._arguments.push(argument);
+      return argument;
+    }
+  }
+
+  class ClapgenArgument {
+    constructor(name) {
+      this.name = name;
     }
   }
 
