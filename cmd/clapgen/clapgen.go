@@ -17,10 +17,16 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"github.com/dop251/goja"
 	"os"
 )
+
+//go:embed clapgen.js
+var configJS string
+
+const configJSFileName = "clapgen.js"
 
 func main() {
 	err := run()
@@ -31,29 +37,24 @@ func main() {
 }
 
 func run() error {
-	source, err := os.ReadFile("hello.js")
+	program, err := goja.Compile(configJSFileName, configJS, true)
 	if err != nil {
-		return fmt.Errorf("reading file failed: hello.js (%w)", err)
-	}
-
-	program, err := goja.Compile("hello.js", string(source), true)
-	if err != nil {
-		return fmt.Errorf("compiling JavaScript file failed: hello.js (%w)", err)
+		return fmt.Errorf("compiling JavaScript file failed: %v (%w)", configJSFileName, err)
 	}
 
 	vm := goja.New()
 
 	err = registerConsole(vm)
 	if err != nil {
-		return fmt.Errorf("registering console failed: %w", err)
+		return fmt.Errorf("registering JavaScript 'console' object failed: %w", err)
 	}
 
 	result, err := vm.RunProgram(program)
 	if err != nil {
-		return fmt.Errorf("running JavaScript file failed: hello.js (%w)", err)
+		return fmt.Errorf("running JavaScript file failed: %v (%w)", configJSFileName, err)
 	}
 
-	fmt.Println("hello.js completed with result:", result.ToObject(vm))
+	fmt.Println(configJSFileName, "completed with result:", result.String())
 
 	return nil
 }
