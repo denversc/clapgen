@@ -62,6 +62,11 @@ func run() error {
 		return err
 	}
 
+	err = validateConfig(vm)
+	if err != nil {
+		return err
+	}
+
 	fmt.Println(configJSFileName, "completed successfully")
 	return nil
 }
@@ -84,6 +89,73 @@ func runJs(name string, jsSource string, vm *goja.Runtime) error {
 	return nil
 }
 
+const clapgenInitJsFunctionName = "clapgen_init"
+const clapgenInstanceJsPropertyName = "clapgenInstance"
+
+func validateConfig(vm *goja.Runtime) error {
+	var value goja.Value
+	exception := vm.Try(func() {
+		value = vm.Get(clapgenInitJsFunctionName)
+	})
+	if exception != nil {
+		fmt.Println(exception.String())
+		return fmt.Errorf("getting '%v' from JavaScript runtime failed: %w", clapgenInitJsFunctionName, exception)
+	}
+	if value == nil {
+		return fmt.Errorf("'%v' not found in JavaScript runtime", clapgenInitJsFunctionName)
+	}
+
+	var initFunction *goja.Object
+	err := vm.ExportTo(value, &initFunction)
+	if err != nil {
+		return fmt.Errorf("converting '%v' to an object failed: %w", clapgenInitJsFunctionName, err)
+	}
+
+	exception = vm.Try(func() {
+		value = initFunction.Get(clapgenInstanceJsPropertyName)
+	})
+	if exception != nil {
+		fmt.Println(exception.String())
+		return fmt.Errorf("getting %v.%v from JavaScript runtime failed: %w",
+			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, exception)
+	}
+	if value == nil {
+		return fmt.Errorf("property not found: %v.%v (ensure that %v() was called exactly once)",
+			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, clapgenInitJsFunctionName)
+	}
+
+	var clapgenJsObject *goja.Object
+	err = vm.ExportTo(value, &clapgenJsObject)
+	if err != nil {
+		return fmt.Errorf("converting %v.%v to an object failed: %w",
+			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, err)
+	}
+
+	exception = vm.Try(func() {
+		value = clapgenJsObject.Get("foo")
+	})
+	if exception != nil {
+		fmt.Println(exception.String())
+		return fmt.Errorf("getting %v.%v.foo from JavaScript runtime failed: %w",
+			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, exception)
+	}
+	if value == nil {
+		return fmt.Errorf("property not found: %v.%v.foo (ensure that %v() was called exactly once)",
+			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, clapgenInitJsFunctionName)
+	}
+
+	var foo int
+	err = vm.ExportTo(value, &foo)
+	if err != nil {
+		return fmt.Errorf("converting %v.%v.foo to an int failed: %w",
+			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, err)
+	}
+
+	fmt.Println("foo", foo)
+
+	return nil
+}
+
 func jsConsoleLog(call goja.FunctionCall) goja.Value {
 	printlnArgs := make([]any, 0, 0)
 	for _, arg := range call.Arguments {
@@ -101,9 +173,5 @@ func registerConsole(vm *goja.Runtime) error {
 		return err
 	}
 
-	return vm.Set("console", console)
-}
-
-func registerClapgenInit(vm *goja.Runtime) error {
-	return nil
+	return vm.GlobalObject().Set("console", console)
 }
