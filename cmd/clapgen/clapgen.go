@@ -16,12 +16,64 @@
 
 package main
 
-import "github.com/Shopify/go-lua"
+import (
+	"fmt"
+	"github.com/dop251/goja"
+	"os"
+)
 
 func main() {
-	l := lua.NewState()
-	lua.OpenLibraries(l)
-	if err := lua.DoFile(l, "hello.lua"); err != nil {
-		panic(err)
+	err := run()
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		os.Exit(1)
 	}
+}
+
+func run() error {
+	source, err := os.ReadFile("hello.js")
+	if err != nil {
+		return fmt.Errorf("reading file failed: hello.js (%w)", err)
+	}
+
+	program, err := goja.Compile("hello.js", string(source), true)
+	if err != nil {
+		return fmt.Errorf("compiling JavaScript file failed: hello.js (%w)", err)
+	}
+
+	vm := goja.New()
+
+	err = registerConsole(vm)
+	if err != nil {
+		return fmt.Errorf("registering console failed: %w", err)
+	}
+
+	result, err := vm.RunProgram(program)
+	if err != nil {
+		return fmt.Errorf("running JavaScript file failed: hello.js (%w)", err)
+	}
+
+	fmt.Println("hello.js completed with result:", result.ToObject(vm))
+
+	return nil
+}
+
+func consoleLog(call goja.FunctionCall) goja.Value {
+	printlnArgs := make([]any, 0, 0)
+	for _, arg := range call.Arguments {
+		printlnArgs = append(printlnArgs, arg.Export())
+	}
+	fmt.Println(printlnArgs...)
+	return goja.Null()
+}
+
+func registerConsole(vm *goja.Runtime) error {
+	console := vm.NewObject()
+
+	err := console.Set("log", consoleLog)
+	if err != nil {
+		return err
+	}
+
+	return vm.Set("console", console)
 }
