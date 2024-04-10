@@ -38,7 +38,7 @@ func main() {
 }
 
 func run() error {
-	loadedConfig, err := config.LoadConfig("clapgen.js")
+	loadedConfig, err := config.Load("clapgen.js")
 	if err != nil {
 		return err
 	}

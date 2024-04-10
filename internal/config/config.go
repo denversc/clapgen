@@ -31,7 +31,7 @@ var sdkJS string
 
 const sdkJSFileName = "sdk.js"
 
-func LoadConfig(configFilePath string) (*Config, error) {
+func Load(configFilePath string) (*Config, error) {
 	configFileBytes, err := os.ReadFile(configFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("reading file failed: %v, (%w)", configFilePath, err)
