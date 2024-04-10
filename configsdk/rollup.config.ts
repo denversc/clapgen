@@ -4,6 +4,7 @@ import type { CompilerOptions as TypeScriptCompilerOptions } from "typescript";
 import copy from "rollup-plugin-copy";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
+import terser from "@rollup/plugin-terser";
 import typescriptPlugin from "rollup-plugin-typescript2";
 import type { RPT2Options } from "rollup-plugin-typescript2";
 
@@ -100,7 +101,8 @@ const tsCompilerConfig: RollupOptions = {
   plugins: [
     resolve({ browser: true }),
     commonjs(),
-    typescriptPlugin(tsCompilerTypescriptPluginOptions())
+    typescriptPlugin(tsCompilerTypescriptPluginOptions()),
+    terser({ format: { comments: false } })
   ],
   logLevel: "debug"
 };
