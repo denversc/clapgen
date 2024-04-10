@@ -1,17 +1,13 @@
 import type { NormalizedOutputOptions, Plugin, RenderedChunk, RollupOptions } from "rollup";
 
+import copy from "rollup-plugin-copy";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import typescriptPlugin from "rollup-plugin-typescript2";
 
 const iifeWrapperPlugin = {
   name: "clapgen-iife-rewriter",
-  renderChunk(
-    code: string,
-    chunk: RenderedChunk,
-    options: NormalizedOutputOptions,
-    meta: unknown
-  ): string {
+  renderChunk(code: string, ...ignored: unknown[]): string {
     // Remove "use strict" because its presence causes a compile-time error:
     // Illegal 'use strict' directive in function with non-simple parameter list
     const useStrict = "'use strict';";
@@ -40,6 +36,18 @@ const iifeWrapperPlugin = {
   }
 } satisfies Plugin;
 
+const copySdkJsPlugin = copy({
+  targets: [
+    {
+      src: "./dist/sdk.js",
+      dest: "../internal/config"
+    }
+  ],
+  flatten: true,
+  overwrite: true,
+  verbose: true
+});
+
 const config: RollupOptions = {
   logLevel: "debug",
   input: "src/index.ts",
@@ -50,7 +58,7 @@ const config: RollupOptions = {
     indent: "  ",
     plugins: [iifeWrapperPlugin]
   },
-  plugins: [resolve(), typescriptPlugin(), commonjs()]
+  plugins: [resolve(), typescriptPlugin(), commonjs(), copySdkJsPlugin]
 };
 
 export default config;
