@@ -1,0 +1,28 @@
+{
+  "name": "configsdk",
+  "version": "1.0.0",
+  "description": "The SDK for configuring clapgen",
+  "scripts": {
+    "prettier": "prettier --write .",
+    "prettier:check": "prettier --check .",
+    "build": "rollup --config rollup.config.ts --configPlugin typescript2='{\"tsconfig\":\"tsconfig.rollup.json\",\"verbosity\":2}'",
+    "test": "TS_NODE_PROJECT=./tsconfig.mocha.json mocha",
+    "tsc": "tsc"
+  },
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@tsconfig/node18": "^18.2.4",
+    "@types/chai": "^4.3.14",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^18.19.31",
+    "chai": "^4.4.1",
+    "mocha": "^10.4.0",
+    "prettier": "3.0.3",
+    "rollup": "^4.14.1",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.4"
+  }
+}
