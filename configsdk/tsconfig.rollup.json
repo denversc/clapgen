@@ -4,6 +4,10 @@
   "compilerOptions": {
     "outDir": "dist/rollup",
     "module": "ES2020",
-    "moduleResolution": "Node"
+    "moduleResolution": "Node",
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "strict": true
   }
 }

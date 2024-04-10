@@ -10,6 +10,10 @@
     "tsc": "tsc"
   },
   "license": "Apache-2.0",
+  "dependencies": {
+    "memfs": "^4.8.1",
+    "typescript": "^5.4.4"
+  },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -22,8 +26,8 @@
     "prettier": "3.0.3",
     "rollup": "^4.14.1",
     "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-polyfill-node": "^0.13.0",
     "rollup-plugin-typescript2": "^0.36.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.4.4"
+    "ts-node": "^10.9.2"
   }
 }

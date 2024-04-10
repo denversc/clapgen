@@ -3,6 +3,11 @@
   "compilerOptions": {
     "module": "es2020",
     "moduleResolution": "node",
-    "outDir": "build"
-  }
+    "outDir": "build",
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "strict": true
+  },
+  "include": ["./src/**/*", "./test/**/*"]
 }
