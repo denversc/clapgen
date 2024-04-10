@@ -1,8 +1,8 @@
 import { Clapgen } from "./clapgen";
 
 declare const clapgen_init: any;
-declare const unexpectedArguments: any[];
 declare const initOptions: ClapgenInitOptions;
+declare const unexpectedArguments: unknown[];
 
 export interface ClapgenInitOptions {
   configVersion: number;
