@@ -17,7 +17,7 @@
 package config
 
 import (
-	_ "embed"
+	"embed"
 	"errors"
 	"fmt"
 	"github.com/dop251/goja"
@@ -28,6 +28,9 @@ import (
 
 //go:embed sdk.js
 var sdkJS string
+
+//go:embed staticfiles
+var staticFilesFS embed.FS
 
 const sdkJSFileName = "sdk.js"
 
@@ -47,6 +50,11 @@ func Load(configFilePath string) (*Config, error) {
 	err = registerConsole(vm)
 	if err != nil {
 		return nil, fmt.Errorf("registering JavaScript 'console' object failed: %w", err)
+	}
+
+	err = vm.GlobalObject().Set("_clapgenLoadStaticFile", jsLoadStaticFile)
+	if err != nil {
+		return nil, fmt.Errorf("registering JavaScript '_clapgenLoadStaticFile' function failed: %w", err)
 	}
 
 	err = runJs(sdkJSFileName, sdkJS, vm)
@@ -174,4 +182,15 @@ func registerConsole(vm *goja.Runtime) error {
 	}
 
 	return vm.GlobalObject().Set("console", console)
+}
+
+func jsLoadStaticFile(fileName string, vm *goja.Runtime) goja.Value {
+	fileBytes, err := staticFilesFS.ReadFile("staticfiles/" + fileName)
+	if err != nil {
+		return goja.Null()
+	}
+
+	fileText := string(fileBytes)
+
+	return vm.ToValue(fileText)
 }

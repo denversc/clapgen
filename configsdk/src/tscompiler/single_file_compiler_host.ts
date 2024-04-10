@@ -2,15 +2,20 @@ import type {
   CompilerHost,
   SourceFile,
   CompilerOptions,
-  ScriptTarget, CreateSourceFileOptions
+  ScriptTarget,
+  CreateSourceFileOptions
 } from "typescript";
+import { createSourceFile } from "typescript";
+
+declare function _clapgenLoadStaticFile(fileName: string): string | null;
 
 export class SingleFileCompilerHost implements CompilerHost {
+  private _output: { fileName: string; fileContents: string } | null = null;
 
-  private _output: {fileName: string, fileContents: string} | null = null;
-
-  constructor(readonly fileName: string, readonly fileContents: string) {
-  }
+  constructor(
+    readonly fileName: string,
+    readonly fileContents: string
+  ) {}
 
   get outputText(): string {
     if (!this._output) {
@@ -21,9 +26,11 @@ export class SingleFileCompilerHost implements CompilerHost {
 
   writeFile(fileName: string, fileContents: string): void {
     if (this._output) {
-      throw new Error("writeFile() called more than one time: " +
-      `first call was for file '${this._output.fileName}', ` +
-      `and second call was for file '${fileName}'`);
+      throw new Error(
+        "writeFile() called more than one time: " +
+          `first call was for file '${this._output.fileName}', ` +
+          `and second call was for file '${fileName}'`
+      );
     }
     this._output = { fileName, fileContents };
   }
@@ -37,7 +44,7 @@ export class SingleFileCompilerHost implements CompilerHost {
   }
 
   getCurrentDirectory(): string {
-    return ""
+    return "";
   }
 
   getDefaultLibFileName(options: CompilerOptions): string {
@@ -50,15 +57,33 @@ export class SingleFileCompilerHost implements CompilerHost {
 
   getSourceFile(
     fileName: string,
-    languageVersionOrOptions: ScriptTarget | CreateSourceFileOptions,
-    onError?: (message: string) => void,
-    shouldCreateNewSourceFile?: boolean
-  ): SourceFile {
-    throw new Error(`getSourceFile() is not implemented; fileName=${fileName}  (error code xyy2ac)`);
+    languageVersionOrOptions: ScriptTarget | CreateSourceFileOptions
+  ): SourceFile | undefined {
+    const fileContents = this._getSourceFileContents(fileName);
+    if (fileContents === undefined) {
+      return undefined;
+    }
+    return createSourceFile(fileName, fileContents, languageVersionOrOptions);
+  }
+
+  private _getSourceFileContents(fileName: string): string | undefined {
+    if (fileName === this.fileName) {
+      return this.fileContents;
+    }
+
+    const staticFileContents = _clapgenLoadStaticFile(fileName);
+    if (staticFileContents !== null) {
+      return staticFileContents;
+    }
+
+    return _clapgenLoadStaticFile("lib." + fileName) ?? undefined;
   }
 
   readFile(fileName: string): string {
-    throw new Error(`readFile() is not implemented, ` + `but was called with fileName: ${fileName} (error code w948fb)`);
+    throw new Error(
+      `readFile() is not implemented, ` +
+        `but was called with fileName: ${fileName} (error code w948fb)`
+    );
   }
 
   useCaseSensitiveFileNames(): boolean {

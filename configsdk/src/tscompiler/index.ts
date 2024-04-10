@@ -1,11 +1,22 @@
 import type { CompilerOptions, TranspileOptions } from "typescript";
 
-import { createProgram, ModuleKind, ScriptTarget, getLineAndCharacterOfPosition, ModuleResolutionKind, flattenDiagnosticMessageText } from "typescript";
+import {
+  createProgram,
+  ModuleKind,
+  ScriptTarget,
+  getLineAndCharacterOfPosition,
+  ModuleResolutionKind,
+  flattenDiagnosticMessageText
+} from "typescript";
 import { SingleFileCompilerHost } from "./single_file_compiler_host";
 
 export default function compileTypeScript(fileName: string, fileContents: string): string {
   const compilerHost = new SingleFileCompilerHost(fileName, fileContents);
-  const program = createProgram({rootNames: [fileName], options: tsCompilerOptions, host: compilerHost});
+  const program = createProgram({
+    rootNames: [fileName],
+    options: tsCompilerOptions,
+    host: compilerHost
+  });
   const emitResult = program.emit();
 
   for (const diagnostic of emitResult.diagnostics) {
@@ -18,28 +29,21 @@ export default function compileTypeScript(fileName: string, fileContents: string
     }
   }
 
-  const emittedFiles = emitResult.emittedFiles;
-  if (!emittedFiles || emittedFiles.length == 0) {
-    throw new Error("no files were emitted by TypeScript compilation, but expected exactly 1");
-  } else if (emittedFiles.length > 1) {
-    throw new Error(`expected exactly 1 file to be emitted, ` + `but got ${emittedFiles.length}: ${emittedFiles}`);
-  }
-
   return compilerHost.outputText;
 }
 
 const tsCompilerOptions: CompilerOptions = {
-    lib: ["es2021"],
-    module: ModuleKind.None,
-    declaration: false,
-    inlineSourceMap: true,
-    inlineSources: true,
-    isolatedModules: true,
-    noEmitOnError: true,
-    target: ScriptTarget.ES2021,
-    strict: true,
-    moduleResolution: ModuleResolutionKind.Node10
-}
+  lib: ["es2021"],
+  module: ModuleKind.None,
+  declaration: false,
+  inlineSourceMap: true,
+  inlineSources: true,
+  isolatedModules: true,
+  noEmitOnError: true,
+  target: ScriptTarget.ES2021,
+  strict: true,
+  moduleResolution: ModuleResolutionKind.Node10
+};
 
 function newTranspileOptions(fileName: string): TranspileOptions {
   return {
@@ -57,5 +61,25 @@ function newTranspileOptions(fileName: string): TranspileOptions {
       strict: true,
       moduleResolution: ModuleResolutionKind.Node10
     }
-  }
+  };
 }
+
+const compileTypeScriptResult = compileTypeScript(
+  "foobar.ts",
+  `
+interface Console {
+  log(...args: unknown[]): void;
+}
+declare const console: Console;
+
+function hello(arg: string): number {
+  console.log("Hello!", arg);
+  return 42;
+}
+
+const result = hello("world");
+console.log("hello() returned:", result);
+`
+);
+
+console.log("compileTypeScript() returned:", compileTypeScriptResult);

@@ -1,12 +1,11 @@
 import type { Plugin, RollupOptions } from "rollup";
-import type { CompilerOptions as TypeScriptCompilerOptions } from "typescript"
+import type { CompilerOptions as TypeScriptCompilerOptions } from "typescript";
 
 import copy from "rollup-plugin-copy";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import typescriptPlugin from "rollup-plugin-typescript2";
-import type {RPT2Options} from "rollup-plugin-typescript2";
-import nodePolyfills from 'rollup-plugin-polyfill-node';
+import type { RPT2Options } from "rollup-plugin-typescript2";
 
 const iifeWrapperPlugin = {
   name: "clapgen-iife-rewriter",
@@ -51,25 +50,25 @@ const copySdkJsPlugin = copy({
   verbose: true
 });
 
-function sdkTypescriptPluginOptions():RPT2Options {
+function sdkTypescriptPluginOptions(): RPT2Options {
   const compilerOptions: TypeScriptCompilerOptions = {
     isolatedModules: true,
     // TODO: figure out why setting 'inlineSources=true' causes this seemingly-incorrect error:
     // [!] (plugin rpt2) RollupError: [plugin rpt2] error TS5051: Option 'inlineSources can only be
     //   used when either option '--inlineSourceMap' or option '--sourceMap' is provided.
     //inlineSources: true,
-    inlineSourceMap: true,
+    inlineSourceMap: true
   };
-  return { tsconfigOverride: { compilerOptions } }
+  return { tsconfigOverride: { compilerOptions } };
 }
 
-function tsCompilerTypescriptPluginOptions():RPT2Options {
+function tsCompilerTypescriptPluginOptions(): RPT2Options {
   const compilerOptions: TypeScriptCompilerOptions = {
     isolatedModules: true,
     sourceMap: false,
-    removeComments: true,
+    removeComments: true
   };
-  return { tsconfigOverride: { compilerOptions } }
+  return { tsconfigOverride: { compilerOptions } };
 }
 
 const sdkConfig: RollupOptions = {
@@ -81,8 +80,13 @@ const sdkConfig: RollupOptions = {
     indent: "  ",
     plugins: [iifeWrapperPlugin]
   },
-  plugins: [resolve({browser: true}), commonjs(), typescriptPlugin(sdkTypescriptPluginOptions()), copySdkJsPlugin],
-  logLevel: "debug",
+  plugins: [
+    resolve({ browser: true }),
+    commonjs(),
+    typescriptPlugin(sdkTypescriptPluginOptions()),
+    copySdkJsPlugin
+  ],
+  logLevel: "debug"
 };
 
 const tsCompilerConfig: RollupOptions = {
@@ -91,10 +95,14 @@ const tsCompilerConfig: RollupOptions = {
     file: "dist/tscompiler.js",
     name: "compileTypeScript",
     format: "iife",
-    indent: "  ",
+    indent: "  "
   },
-  plugins: [resolve({browser: true}), commonjs(), typescriptPlugin(tsCompilerTypescriptPluginOptions())],
-  logLevel: "debug",
+  plugins: [
+    resolve({ browser: true }),
+    commonjs(),
+    typescriptPlugin(tsCompilerTypescriptPluginOptions())
+  ],
+  logLevel: "debug"
 };
 
 export default [sdkConfig, tsCompilerConfig];
