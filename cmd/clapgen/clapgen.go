@@ -21,7 +21,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dop251/goja"
+	"log"
 	"os"
+	"text/template"
 	"unicode/utf8"
 )
 
@@ -30,23 +32,36 @@ const configJSFileName = "clapgen.js"
 //go:embed preamble.js
 var preambleJS string
 
+const bashTemplateFileName = "bash.go.tmpl"
+
+//go:embed bash.go.tmpl
+var bashTemplate string
+
 const preambleJSFileName = "preamble.js"
 
 func main() {
 	err := run()
 	if err != nil {
-		fmt.Println("ERROR:", err)
-		os.Exit(1)
+		log.Fatal("ERROR: ", err)
 	}
 }
 
 func run() error {
+	config, err := loadConfig()
+	if err != nil {
+		return err
+	}
+
+	return generateCode(config)
+}
+
+func loadConfig() (*ClapgenConfig, error) {
 	configJsBytes, err := os.ReadFile(configJSFileName)
 	if err != nil {
-		return fmt.Errorf("loading config file failed: %v, (%w)", configJSFileName, err)
+		return nil, fmt.Errorf("reading config file failed: %v, (%w)", configJSFileName, err)
 	}
 	if !utf8.Valid(configJsBytes) {
-		return fmt.Errorf("invalid UTF-8 encoded text in config file: %v", configJSFileName)
+		return nil, fmt.Errorf("invalid UTF-8 encoded text in config file: %v", configJSFileName)
 	}
 	configJS := string(configJsBytes)
 
@@ -55,26 +70,20 @@ func run() error {
 
 	err = registerConsole(vm)
 	if err != nil {
-		return fmt.Errorf("registering JavaScript 'console' object failed: %w", err)
+		return nil, fmt.Errorf("registering JavaScript 'console' object failed: %w", err)
 	}
 
 	err = runJs(preambleJSFileName, preambleJS, vm)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = runJs(configJSFileName, configJS, vm)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	config, err := validateConfig(vm)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(configJSFileName, "completed successfully with config:", config)
-	return nil
+	return extractConfig(vm)
 }
 
 func runJs(name string, jsSource string, vm *goja.Runtime) error {
@@ -87,7 +96,7 @@ func runJs(name string, jsSource string, vm *goja.Runtime) error {
 	if err != nil {
 		var jsException *goja.Exception
 		if errors.As(err, &jsException) {
-			fmt.Println(jsException.String())
+			log.Println(jsException.String())
 		}
 		return fmt.Errorf("JavaScript execution failed: %v (%w)", name, err)
 	}
@@ -98,13 +107,13 @@ func runJs(name string, jsSource string, vm *goja.Runtime) error {
 const clapgenInitJsFunctionName = "clapgen_init"
 const clapgenInstanceJsPropertyName = "clapgenInstance"
 
-func validateConfig(vm *goja.Runtime) (*ClapgenConfig, error) {
+func extractConfig(vm *goja.Runtime) (*ClapgenConfig, error) {
 	var value goja.Value
 	exception := vm.Try(func() {
 		value = vm.Get(clapgenInitJsFunctionName)
 	})
 	if exception != nil {
-		fmt.Println(exception.String())
+		log.Println(exception.String())
 		return nil, fmt.Errorf("getting '%v' from JavaScript runtime failed: %w",
 			clapgenInitJsFunctionName, exception)
 	}
@@ -124,7 +133,7 @@ func validateConfig(vm *goja.Runtime) (*ClapgenConfig, error) {
 		value = initFunction.Get(clapgenInstanceJsPropertyName)
 	})
 	if exception != nil {
-		fmt.Println(exception.String())
+		log.Println(exception.String())
 		return nil, fmt.Errorf("getting %v.%v from JavaScript runtime failed: %w",
 			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, exception)
 	}
@@ -144,7 +153,7 @@ func validateConfig(vm *goja.Runtime) (*ClapgenConfig, error) {
 		value = clapgenJsObject.Get("_arguments")
 	})
 	if exception != nil {
-		fmt.Println(exception.String())
+		log.Println(exception.String())
 		return nil, fmt.Errorf("getting %v.%v._arguments from JavaScript runtime failed: %w",
 			clapgenInitJsFunctionName, clapgenInstanceJsPropertyName, exception)
 	}
@@ -168,7 +177,7 @@ type ClapgenConfig struct {
 }
 
 type ClapgenArgument struct {
-	Name string `js:"name"`
+	Flag string `js:"flag"`
 }
 
 func jsConsoleLog(call goja.FunctionCall) goja.Value {
@@ -176,7 +185,7 @@ func jsConsoleLog(call goja.FunctionCall) goja.Value {
 	for _, arg := range call.Arguments {
 		printlnArgs = append(printlnArgs, arg.String())
 	}
-	fmt.Println(printlnArgs...)
+	log.Println(printlnArgs...)
 	return goja.Null()
 }
 
@@ -189,4 +198,18 @@ func registerConsole(vm *goja.Runtime) error {
 	}
 
 	return vm.GlobalObject().Set("console", console)
+}
+
+func generateCode(config *ClapgenConfig) error {
+	tmpl, err := template.New(bashTemplateFileName).Parse(bashTemplate)
+	if err != nil {
+		return fmt.Errorf("parsing template failed: %v (%w)", bashTemplateFileName, err)
+	}
+
+	err = tmpl.Execute(os.Stdout, config)
+	if err != nil {
+		return fmt.Errorf("executing template failed: %w", err)
+	}
+
+	return nil
 }

@@ -26,16 +26,20 @@ const clapgen_init = function clapgen_init() {
       this._arguments = [];
     }
 
-    addArgument(name) {
-      const argument = new ClapgenArgument(name);
+    addArgument(flag) {
+      if (typeof flag !== "string") {
+        throw new Error(`'flag' argument should be a string, but got ` +
+        `${typeof flag}: ${flag}`);
+      }
+      const argument = new ClapgenArgument(flag);
       this._arguments.push(argument);
       return argument;
     }
   }
 
   class ClapgenArgument {
-    constructor(name) {
-      this.name = name;
+    constructor(flag) {
+      this.flag = flag;
     }
   }
 

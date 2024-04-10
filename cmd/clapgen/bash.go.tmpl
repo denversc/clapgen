@@ -1,0 +1,54 @@
+function parse_args {
+{{ range $argument := .Arguments }}
+  local {{ $argument.Flag }}_status=notfound
+  local {{ $argument.Flag }}_value=
+{{ end }}
+
+  while [[ $# -gt 0 ]] ; do
+    local arg="$1"
+    shift
+
+    if [[ $arg == -* ]] ; then
+{{ range $i, $argument := .Arguments }}
+      {{ if eq $i 0 }}if{{ else }}elif{{ end}} [[ ${{ $argument.Flag}}_status == "needvalue" ]] ; then
+        echo "ERROR: expected value after -{{ $argument.Flag}}, but got $arg" >&2
+        exit 2
+{{ end }}
+{{ range $argument := .Arguments }}
+      elif [[ $arg == "-{{ $argument.Flag }}" ]] ; then
+        {{ $argument.Flag }}_mode=needvalue
+{{ end }}
+      else
+        echo "ERROR: unknown flag: $arg" >&2
+        exit 2
+      fi
+{{ range $argument := .Arguments }}
+    elif [[ $a_mode == "needvalue" ]] ; then
+      a_value="$arg"
+      a_mode=found
+{{ end }}
+    elif [[ $b_mode == "needvalue" ]] ; then
+      b_value="$arg"
+      b_mode=found
+    else
+      echo "ERROR: unrecognized command-line argument: $arg" >&2
+      exit 2
+    fi
+  done
+
+  if [[ $a_mode == "needvalue" ]] ; then
+    echo "ERROR: missing value after -a" >&2
+    exit 2
+  else
+    readonly A="$a_value"
+    readonly ARG_A_RESULT="$a_mode"
+  fi
+
+  if [[ $b_mode == "needvalue" ]] ; then
+    echo "ERROR: missing value after -b" >&2
+    exit 2
+  else
+    readonly B="$b_value"
+    readonly ARG_B_RESULT="$b_mode"
+  fi
+}
