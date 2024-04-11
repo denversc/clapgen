@@ -47,7 +47,7 @@ export class SingleFileCompilerHost implements CompilerHost {
     return "";
   }
 
-  getDefaultLibFileName(options: CompilerOptions): string {
+  getDefaultLibFileName(_options: CompilerOptions): string {
     return "lib.d.ts";
   }
 

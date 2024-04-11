@@ -1,16 +1,14 @@
 import type { Plugin, RollupOptions } from "rollup";
-import type { CompilerOptions as TypeScriptCompilerOptions } from "typescript";
 
 import copy from "rollup-plugin-copy";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
 import typescriptPlugin from "rollup-plugin-typescript2";
-import type { RPT2Options } from "rollup-plugin-typescript2";
 
 const iifeWrapperPlugin = {
   name: "clapgen-iife-rewriter",
-  renderChunk(code: string, ...ignored: unknown[]): string {
+  renderChunk(code: string, ..._ignored: unknown[]): string {
     // Remove "use strict" because its presence causes a compile-time error:
     // Illegal 'use strict' directive in function with non-simple parameter list
     const useStrict = "'use strict';";
@@ -51,27 +49,6 @@ const copySdkJsPlugin = copy({
   verbose: true
 });
 
-function sdkTypescriptPluginOptions(): RPT2Options {
-  const compilerOptions: TypeScriptCompilerOptions = {
-    isolatedModules: true,
-    // TODO: figure out why setting 'inlineSources=true' causes this seemingly-incorrect error:
-    // [!] (plugin rpt2) RollupError: [plugin rpt2] error TS5051: Option 'inlineSources can only be
-    //   used when either option '--inlineSourceMap' or option '--sourceMap' is provided.
-    //inlineSources: true,
-    inlineSourceMap: true
-  };
-  return { tsconfigOverride: { compilerOptions } };
-}
-
-function tsCompilerTypescriptPluginOptions(): RPT2Options {
-  const compilerOptions: TypeScriptCompilerOptions = {
-    isolatedModules: true,
-    sourceMap: false,
-    removeComments: true
-  };
-  return { tsconfigOverride: { compilerOptions } };
-}
-
 const sdkConfig: RollupOptions = {
   input: "src/sdk/index.ts",
   output: {
@@ -84,7 +61,7 @@ const sdkConfig: RollupOptions = {
   plugins: [
     resolve({ browser: true }),
     commonjs(),
-    typescriptPlugin(sdkTypescriptPluginOptions()),
+    typescriptPlugin({ tsconfig: "./tsconfig.bundle.sdk.json" }),
     copySdkJsPlugin
   ],
   logLevel: "debug"
@@ -101,10 +78,11 @@ const tsCompilerConfig: RollupOptions = {
   plugins: [
     resolve({ browser: true }),
     commonjs(),
-    typescriptPlugin(tsCompilerTypescriptPluginOptions()),
+    typescriptPlugin({ tsconfig: "./tsconfig.bundle.tscompiler.json" }),
     terser({ format: { comments: false } })
   ],
   logLevel: "debug"
 };
 
+// noinspection JSUnusedGlobalSymbols
 export default [sdkConfig, tsCompilerConfig];

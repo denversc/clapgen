@@ -6,7 +6,7 @@
     "prettier": "prettier --write .",
     "prettier:check": "prettier --check .",
     "build": "rollup --config rollup.config.ts --configPlugin typescript2='{\"tsconfig\":\"tsconfig.rollup.json\",\"verbosity\":2}'",
-    "test": "TS_NODE_PROJECT=./tsconfig.mocha.json mocha",
+    "test": "mocha",
     "tsc": "tsc"
   },
   "license": "Apache-2.0",

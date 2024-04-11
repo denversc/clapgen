@@ -1,10 +1,9 @@
 {
   "extends": "@tsconfig/node18/tsconfig.json",
-  "include": ["src/**/*.ts", "test/**/*.ts"],
   "compilerOptions": {
-    "outDir": "build/default",
+    "module": "es2022",
+    "moduleResolution": "bundler",
 
-    "allowSyntheticDefaultImports": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
     "exactOptionalPropertyTypes": true,

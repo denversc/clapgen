@@ -1,7 +1,5 @@
 {
-  "extension": "ts",
+  "extension": ["ts"],
   "require": "ts-node/register",
-  "spec": "test/**/*.test.ts",
-  "timeout": 60000,
-  "compiler-options": "{\"module\":\"commonjs\"}"
+  "spec": "test/**/*.test.ts"
 }

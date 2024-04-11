@@ -2,12 +2,23 @@
   "extends": "@tsconfig/node18/tsconfig.json",
   "files": ["rollup.config.ts"],
   "compilerOptions": {
-    "outDir": "dist/rollup",
-    "module": "ES2020",
-    "moduleResolution": "Node",
+    "outDir": "build/rollup",
+    "module": "es2022",
+    "moduleResolution": "node",
+    "sourceMap": false,
+
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
+    "noImplicitReturns": true,
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedIndexedAccess": true,
-    "strict": true
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
   }
 }

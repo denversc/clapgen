@@ -1,4 +1,4 @@
-import type { CompilerOptions, TranspileOptions } from "typescript";
+import type { CompilerOptions } from "typescript";
 
 import {
   createProgram,
@@ -8,15 +8,17 @@ import {
   ModuleResolutionKind,
   flattenDiagnosticMessageText
 } from "typescript";
+
 import { SingleFileCompilerHost } from "./single_file_compiler_host";
 
 export default function compileTypeScript(fileName: string, fileContents: string): string {
   const compilerHost = new SingleFileCompilerHost(fileName, fileContents);
   const program = createProgram({
     rootNames: [fileName],
-    options: tsCompilerOptions,
+    options: tsCompilerOptions(),
     host: compilerHost
   });
+
   const emitResult = program.emit();
 
   for (const diagnostic of emitResult.diagnostics) {
@@ -32,54 +34,17 @@ export default function compileTypeScript(fileName: string, fileContents: string
   return compilerHost.outputText;
 }
 
-const tsCompilerOptions: CompilerOptions = {
-  lib: ["es2021"],
-  module: ModuleKind.None,
-  declaration: false,
-  inlineSourceMap: true,
-  inlineSources: true,
-  isolatedModules: true,
-  noEmitOnError: true,
-  target: ScriptTarget.ES2021,
-  strict: true,
-  moduleResolution: ModuleResolutionKind.Node10
-};
-
-function newTranspileOptions(fileName: string): TranspileOptions {
+function tsCompilerOptions(): CompilerOptions {
   return {
-    fileName,
-    reportDiagnostics: true,
-    compilerOptions: {
-      lib: ["es2021"],
-      module: ModuleKind.None,
-      declaration: false,
-      inlineSourceMap: true,
-      inlineSources: true,
-      isolatedModules: true,
-      noEmitOnError: true,
-      target: ScriptTarget.ES2021,
-      strict: true,
-      moduleResolution: ModuleResolutionKind.Node10
-    }
+    lib: ["es2021"],
+    module: ModuleKind.None,
+    declaration: false,
+    inlineSourceMap: true,
+    inlineSources: true,
+    isolatedModules: true,
+    noEmitOnError: true,
+    target: ScriptTarget.ES2021,
+    strict: true,
+    moduleResolution: ModuleResolutionKind.Node10
   };
 }
-
-const compileTypeScriptResult = compileTypeScript(
-  "foobar.ts",
-  `
-interface Console {
-  log(...args: unknown[]): void;
-}
-declare const console: Console;
-
-function hello(arg: string): number {
-  console.log("Hello!", arg);
-  return 42;
-}
-
-const result = hello("world");
-console.log("hello() returned:", result);
-`
-);
-
-console.log("compileTypeScript() returned:", compileTypeScriptResult);
