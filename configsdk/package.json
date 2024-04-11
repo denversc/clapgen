@@ -26,7 +26,9 @@
     "prettier": "3.0.3",
     "rollup": "^4.14.1",
     "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-typescript2": "^0.36.0",
+    "source-map": "^0.7.4",
     "ts-node": "^10.9.2"
   }
 }

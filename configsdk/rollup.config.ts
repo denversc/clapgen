@@ -1,6 +1,9 @@
-import type { Plugin, RollupOptions } from "rollup";
+import { NormalizedOutputOptions, Plugin, RenderedChunk, RollupOptions } from "rollup";
 
+import type { StartOfSourceMap } from "source-map";
+import { SourceMapGenerator } from "source-map";
 import copy from "rollup-plugin-copy";
+import sourcemaps from "rollup-plugin-sourcemaps";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
@@ -8,32 +11,54 @@ import typescriptPlugin from "rollup-plugin-typescript2";
 
 const iifeWrapperPlugin = {
   name: "clapgen-iife-rewriter",
-  renderChunk(code: string, ..._ignored: unknown[]): string {
-    // Remove "use strict" because its presence causes a compile-time error:
-    // Illegal 'use strict' directive in function with non-simple parameter list
-    const useStrict = "'use strict';";
-    const useStrictStart = code.indexOf(useStrict);
-    if (useStrictStart < 0) {
-      throw new Error(`expected code to contain: ${useStrict}`);
-    }
-    const nonStrictCode =
-      code.substring(0, useStrictStart) + code.substring(useStrictStart + useStrict.length);
-
+  renderChunk(
+    code: string,
+    chunk: RenderedChunk,
+    options: NormalizedOutputOptions
+  ): { code: string; map?: string } {
     // Replace the IIFE wrapper with a normal function.
-    const prefix = "var zzyzx = (function () {";
-    if (!nonStrictCode.startsWith(prefix)) {
+    const prefix = "var clapgen_init = (function () {";
+    if (!code.startsWith(prefix)) {
       throw new Error(`expected code to start with: ${prefix}`);
     }
     const suffix = "})();";
-    if (!nonStrictCode.endsWith(suffix)) {
+    if (!code.endsWith(suffix)) {
       throw new Error(`expected code to end with: ${suffix}`);
     }
 
-    return (
+    const modifiedCode =
       "const clapgen_init = function clapgen_init(initOptions, ...unexpectedArguments) {" +
-      nonStrictCode.substring(prefix.length, nonStrictCode.length - suffix.length) +
-      "}"
-    );
+      code.substring(prefix.length, code.length - suffix.length) +
+      "}";
+
+    if (!options.sourcemap) {
+      return { code: modifiedCode };
+    }
+
+    const sourceMapGeneratorOptions: StartOfSourceMap = {};
+    if (options.file !== undefined) {
+      sourceMapGeneratorOptions.file = options.file;
+    }
+    const sourceMapGenerator = new SourceMapGenerator(sourceMapGeneratorOptions);
+    sourceMapGenerator.setSourceContent(chunk.fileName, code);
+    function addSourceMapping(originalColumn: number, generatedColumn: number, name: string) {
+      sourceMapGenerator.addMapping({
+        original: { line: 1, column: originalColumn },
+        generated: { line: 1, column: generatedColumn },
+        source: chunk.fileName,
+        name
+      });
+    }
+
+    addSourceMapping(4, 6, "clapgen_init start");
+    addSourceMapping(17, 19, "equals sign start");
+    addSourceMapping(20, 21, "function keyword start");
+    addSourceMapping(29, 42, "parameter list opening parenthesis");
+    addSourceMapping(30, 78, "parameter list closing parenthesis");
+    addSourceMapping(32, 80, "opening squiggly bracket");
+
+    console.log("zzyzx", sourceMapGenerator.toString());
+    return { code: modifiedCode, map: sourceMapGenerator.toString() };
   }
 } satisfies Plugin;
 
@@ -53,12 +78,15 @@ const sdkConfig: RollupOptions = {
   input: "src/sdk/index.ts",
   output: {
     file: "dist/sdk.js",
-    name: "zzyzx",
+    name: "clapgen_init",
     format: "iife",
     indent: "  ",
+    strict: false,
+    sourcemap: "inline",
     plugins: [iifeWrapperPlugin]
   },
   plugins: [
+    sourcemaps(),
     resolve({ browser: true }),
     commonjs(),
     typescriptPlugin({ tsconfig: "./tsconfig.bundle.sdk.json" }),
