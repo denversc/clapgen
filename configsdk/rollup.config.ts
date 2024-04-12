@@ -57,7 +57,6 @@ const iifeWrapperPlugin = {
     addSourceMapping(30, 78, "parameter list closing parenthesis");
     addSourceMapping(32, 80, "opening squiggly bracket");
 
-    console.log("zzyzx", sourceMapGenerator.toString());
     return { code: modifiedCode, map: sourceMapGenerator.toString() };
   }
 } satisfies Plugin;
