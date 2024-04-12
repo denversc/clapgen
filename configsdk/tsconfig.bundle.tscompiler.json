@@ -3,7 +3,7 @@
   "include": ["./src/tscompiler/**/*.ts"],
   "compilerOptions": {
     "outDir": "build/bundle/tscompiler",
-    "sourceMap": true,
+    "sourceMap": false,
     "removeComments": true
   }
 }

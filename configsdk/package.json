@@ -8,7 +8,7 @@
   "scripts": {
     "prettier": "prettier --write .",
     "prettier:check": "prettier --check .",
-    "build": "rollup --config rollup.config.ts --configPlugin typescript2='{\"tsconfig\":\"tsconfig.rollup.json\",\"verbosity\":2}'",
+    "build": "ts-node src/rollup/main.ts",
     "test": "mocha",
     "tsc": "tsc"
   },
