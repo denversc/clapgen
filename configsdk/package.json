@@ -9,6 +9,8 @@
     "prettier": "prettier --write .",
     "prettier:check": "prettier --check .",
     "build": "ts-node src/rollup/main.ts",
+    "build:sdk": "ts-node src/rollup/main.ts sdk",
+    "build:tscompiler": "ts-node src/rollup/main.ts tscompiler",
     "test": "mocha",
     "tsc": "tsc"
   },
