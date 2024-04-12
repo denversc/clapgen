@@ -1,25 +1,10 @@
 {
-  "extends": "@tsconfig/node20/tsconfig.json",
-  "include": ["src/**/*.ts", "test/**/*.ts"],
-  "compilerOptions": {
-    "outDir": "build/default",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-
-    "allowSyntheticDefaultImports": true,
-    "allowUnusedLabels": false,
-    "allowUnreachableCode": false,
-    "exactOptionalPropertyTypes": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true
-  }
+  "files": [],
+  "include": [],
+  "references": [
+    { "path": "./src/rollup" },
+    { "path": "./src/sdk" },
+    { "path": "./src/tscompiler" },
+    { "path": "./test" }
+  ]
 }

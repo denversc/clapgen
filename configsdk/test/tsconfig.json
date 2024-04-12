@@ -1,0 +1,14 @@
+{
+  "extends": "../tsconfig.base",
+  "compilerOptions": {
+    "types": ["node", "mocha", "chai"]
+  },
+
+  "references": [
+    { "path": "../src/sdk" },
+    { "path": "../src/rollup" },
+    { "path": "../src/tscompiler" }
+  ],
+
+  "include": ["**/*"]
+}
