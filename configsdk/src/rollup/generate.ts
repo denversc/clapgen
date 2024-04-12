@@ -2,8 +2,7 @@ import type { InputOptions, OutputOptions } from "rollup";
 
 import rollup from "rollup";
 
-import { log } from "./log";
-import { formatElapsedTime } from "./perf";
+import { formatElapsedTime, log } from "./util";
 
 export interface GenerateOptions {
   inputOptions(): InputOptions;

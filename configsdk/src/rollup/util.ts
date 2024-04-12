@@ -1,3 +1,7 @@
+export function log(...args: unknown[]): void {
+  console.log(...args);
+}
+
 export function formatElapsedTime(startTime: number, endTime: number): string {
   const milliseconds = endTime - startTime;
   const minutes = Math.floor(milliseconds / (1000 * 60));

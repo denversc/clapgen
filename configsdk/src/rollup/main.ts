@@ -3,7 +3,7 @@ import rollup from "rollup";
 import { cwd } from "node:process";
 
 import { parseArgs } from "./args";
-import { log } from "./log";
+import { log } from "./util";
 import { generate } from "./generate";
 import * as sdk from "./sdk_options";
 import * as tscompiler from "./tscompiler_options";
