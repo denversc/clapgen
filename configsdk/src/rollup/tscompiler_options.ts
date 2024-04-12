@@ -7,7 +7,7 @@ import type { Options as TerserOptions } from "@rollup/plugin-terser";
 
 export function inputOptions(): InputOptions {
   return {
-    input: "build/rollup/tscompiler/index.js",
+    input: "build/rollup/src/tscompiler/index.js",
     plugins: [resolve({ browser: true }), commonjs(), terser(terserOptions())],
     logLevel: "debug"
   };

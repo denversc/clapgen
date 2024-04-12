@@ -1,27 +1,10 @@
 {
-  "extends": "@tsconfig/node20/tsconfig.json",
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/**/rollup/*.ts"],
+  "extends": "./tsconfig.base.json",
+  "files": ["src/sdk/index.ts", "src/tscompiler/index.ts"],
   "compilerOptions": {
     "outDir": "build/rollup",
     "module": "es2022",
     "moduleResolution": "bundler",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-
-    "allowUnusedLabels": false,
-    "allowUnreachableCode": false,
-    "exactOptionalPropertyTypes": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "noImplicitReturns": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true
+    "composite": false
   }
 }

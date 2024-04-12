@@ -7,7 +7,7 @@ import commonjs from "@rollup/plugin-commonjs";
 
 export function inputOptions(): InputOptions {
   return {
-    input: "build/rollup/sdk/index.js",
+    input: "build/rollup/src/sdk/index.js",
     plugins: [sourcemaps(), resolve({ browser: true }), commonjs()],
     logLevel: "debug"
   };
