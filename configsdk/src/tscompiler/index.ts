@@ -11,6 +11,11 @@ import {
 
 import { SingleFileCompilerHost } from "./single_file_compiler_host";
 
+interface Console {
+  log(...args: unknown[]): void;
+}
+declare const console: Console;
+
 export default function compileTypeScript(fileName: string, fileContents: string): string {
   const compilerHost = new SingleFileCompilerHost(fileName, fileContents);
   const program = createProgram({
