@@ -1,8 +1,14 @@
 {
   "extends": "@tsconfig/node20/tsconfig.json",
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/rollup/*.ts"],
   "compilerOptions": {
+    "outDir": "build/rollup",
     "module": "es2022",
     "moduleResolution": "bundler",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
 
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,

@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.bundle.json",
-  "include": ["./src/tscompiler/**/*.ts"],
-  "compilerOptions": {
-    "outDir": "build/bundle/tscompiler",
-    "sourceMap": false,
-    "removeComments": true
-  }
-}

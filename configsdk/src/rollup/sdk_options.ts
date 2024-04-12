@@ -10,20 +10,13 @@ import type {
 import sourcemaps from "rollup-plugin-sourcemaps";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
-import typescriptPlugin from "rollup-plugin-typescript2";
 import { SourceMapGenerator } from "source-map";
 import type { StartOfSourceMap } from "source-map";
 
 export function inputOptions(): InputOptions {
   return {
-    input: "src/sdk/index.ts",
-    plugins: [
-      sourcemaps(),
-      resolve({ browser: true }),
-      commonjs(),
-      typescriptPlugin({ tsconfig: "tsconfig.bundle.sdk.json" }),
-      iifeWrapperPlugin()
-    ],
+    input: "build/rollup/sdk/index.js",
+    plugins: [sourcemaps(), resolve({ browser: true }), commonjs()],
     logLevel: "debug"
   };
 }
@@ -35,7 +28,8 @@ export function outputOptions(): OutputOptions {
     format: "iife",
     indent: "  ",
     strict: false,
-    sourcemap: true
+    sourcemap: true,
+    plugins: [iifeWrapperPlugin()]
   };
 }
 

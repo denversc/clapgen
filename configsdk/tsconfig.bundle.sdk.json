@@ -1,8 +1,0 @@
-{
-  "extends": "./tsconfig.bundle.json",
-  "include": ["./src/sdk/**/*.ts"],
-  "compilerOptions": {
-    "outDir": "build/bundle/sdk",
-    "sourceMap": true
-  }
-}

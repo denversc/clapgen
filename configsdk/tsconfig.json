@@ -3,6 +3,8 @@
   "include": ["src/**/*.ts", "test/**/*.ts"],
   "compilerOptions": {
     "outDir": "build/default",
+    "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
 
     "allowSyntheticDefaultImports": true,

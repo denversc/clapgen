@@ -7,13 +7,16 @@ import { MonotonicTimer, logger } from "./util";
 import { generate } from "./generate";
 import * as sdk from "./sdk_options";
 import * as tscompiler from "./tscompiler_options";
+import { transpile } from "./transpile";
 
 async function main(): Promise<void> {
   const timer = new MonotonicTimer();
   const parsedArgs = parseArgs();
 
-  logger.info(`Configuring rollup (rollup version: ${rollup.VERSION})`);
+  logger.info(`Running Rollup (rollup version: ${rollup.VERSION})`);
   logger.info(`Current directory: ${cwd()}`);
+
+  transpile();
 
   if (parsedArgs.sdkEnabled) {
     await generate(sdk);
@@ -23,7 +26,7 @@ async function main(): Promise<void> {
     await generate(tscompiler);
   }
 
-  logger.complete(`Successfully built all outputs in ${timer.elapsed}`);
+  logger.complete(`Successfully built all requested outputs in ${timer.elapsed}`);
 }
 
 main();
