@@ -1,5 +1,7 @@
-import type { InputOptions, OutputOptions } from "rollup";
+import type { InputOptions, OutputAsset, OutputChunk, OutputOptions, RollupOutput } from "rollup";
 
+import { statSync } from "node:fs";
+import { join } from "node:path";
 import rollup from "rollup";
 
 import { MonotonicTimer, logger } from "./util";
@@ -26,9 +28,28 @@ export async function generate(options: GenerateOptions): Promise<void> {
   const output = await bundle.write(outputOptions);
   logger.note(`Generating ${outputOptions.file} completed in ${generatingTimer.elapsed}`);
 
-  const outputFileNames = output.output.map((entry) => entry.fileName);
-  logger.success(
-    `Generated ${outputFileNames.length} files ` +
-      `in ${timer.elapsed}: ${outputFileNames.join(", ")}`
-  );
+  logOutput(output, timer.elapsed);
+}
+
+function logOutput(output: RollupOutput, elapsedTime: string): void {
+  if (output.output.length === 0) {
+    logger.success(`Generated 0 files in ${elapsedTime}`);
+  } else if (output.output.length === 1) {
+    logger.success(`Generated 1 file in ${elapsedTime}:`);
+  } else {
+    logger.success(`Generated ${output.output.length} files in ${elapsedTime}:`);
+  }
+
+  for (const chunk of output.output) {
+    logger.note("  Generated file: " + formatChunk(chunk));
+  }
+}
+
+function formatChunk(chunk: OutputChunk | OutputAsset): string {
+  const fileName = chunk.fileName;
+  const filePath = join("dist", fileName);
+  const statResult = statSync(filePath, { bigint: true, throwIfNoEntry: false });
+  const formattedFileSize = statResult?.size.toLocaleString("en-US");
+  const fileSizeStr = formattedFileSize !== undefined ? formattedFileSize + " bytes" : "unknown";
+  return `${filePath} (size: ${fileSizeStr})`;
 }
