@@ -2,6 +2,9 @@
   "name": "configsdk",
   "version": "1.0.0",
   "description": "The SDK for configuring clapgen",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "prettier": "prettier --write .",
     "prettier:check": "prettier --check .",
@@ -11,7 +14,7 @@
   },
   "license": "Apache-2.0",
   "dependencies": {
-    "typescript": "^5.4.4"
+    "typescript": "^5.4.5"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
