@@ -2,7 +2,7 @@ import type { InputOptions, OutputOptions } from "rollup";
 
 import rollup from "rollup";
 
-import { formatElapsedTime, log } from "./util";
+import { MonotonicTimer, logger } from "./util";
 
 export interface GenerateOptions {
   inputOptions(): InputOptions;
@@ -13,17 +13,22 @@ export async function generate(options: GenerateOptions): Promise<void> {
   const inputOptions = options.inputOptions();
   const outputOptions = options.outputOptions();
 
-  const startTime = performance.now();
-  log(`Generating ${outputOptions.file} from ${inputOptions.input}`);
+  const timer = new MonotonicTimer();
+  logger.start(`Generating ${outputOptions.file} from ${inputOptions.input}`);
 
-  log(`Loading ${inputOptions.input}`);
+  logger.await(`Loading ${inputOptions.input}`);
+  const loadingTimer = new MonotonicTimer();
   const bundle = await rollup.rollup(inputOptions);
+  logger.note(`Loading ${inputOptions.input} completed in ${loadingTimer.elapsed}`);
 
-  log(`Generating ${outputOptions.file}`);
+  logger.await(`Generating ${outputOptions.file}`);
+  const generatingTimer = new MonotonicTimer();
   const output = await bundle.write(outputOptions);
+  logger.note(`Generating ${outputOptions.file} completed in ${generatingTimer.elapsed}`);
 
-  const endTime = performance.now();
-  const elapsedTime = formatElapsedTime(startTime, endTime);
   const outputFileNames = output.output.map((entry) => entry.fileName);
-  log(`Generated ${outputFileNames.length} files in ${elapsedTime}: ${outputFileNames.join(", ")}`);
+  logger.success(
+    `Generated ${outputFileNames.length} files ` +
+      `in ${timer.elapsed}: ${outputFileNames.join(", ")}`
+  );
 }
