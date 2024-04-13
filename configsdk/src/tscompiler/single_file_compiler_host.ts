@@ -14,7 +14,8 @@ export class SingleFileCompilerHost implements CompilerHost {
 
   constructor(
     readonly fileName: string,
-    readonly fileContents: string
+    readonly fileContents: string,
+    readonly loadFile: (...args: unknown[]) => void
   ) {}
 
   get outputText(): string {

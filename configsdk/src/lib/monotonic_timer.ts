@@ -1,8 +1,10 @@
+import { monotonic } from "./platform";
+
 export class MonotonicTimer {
-  readonly #startTime: number = performance.now();
+  readonly #startTime: number = monotonic();
 
   get elapsed(): string {
-    return formatElapsedTime(this.#startTime, performance.now());
+    return formatElapsedTime(this.#startTime, monotonic());
   }
 }
 

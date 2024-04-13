@@ -3,6 +3,9 @@
   "include": [],
   "references": [
     { "path": "./src/lib" },
+    { "path": "./src/platform" },
+    { "path": "./src/platform/goja" },
+    { "path": "./src/platform/node" },
     { "path": "./src/rollup" },
     { "path": "./src/scripts" },
     { "path": "./src/sdk" },

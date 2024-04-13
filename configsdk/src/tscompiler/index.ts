@@ -9,15 +9,21 @@ import {
   flattenDiagnosticMessageText
 } from "typescript";
 
+export { setPlatform } from "../lib/platform";
 import { SingleFileCompilerHost } from "./single_file_compiler_host";
+import { getLogger } from "../lib/platform";
 
-interface Console {
-  log(...args: unknown[]): void;
+interface CompileTypeScriptOptions {
+  fileName: string;
+  fileContents: string;
+  loadFile: (...args: unknown[]) => void;
 }
-declare const console: Console;
 
-export default function compileTypeScript(fileName: string, fileContents: string): string {
-  const compilerHost = new SingleFileCompilerHost(fileName, fileContents);
+export default function compileTypeScript(options: CompileTypeScriptOptions): string {
+  const { fileName, fileContents, loadFile } = options;
+  const logger = getLogger();
+
+  const compilerHost = new SingleFileCompilerHost(fileName, fileContents, loadFile);
   const program = createProgram({
     rootNames: [fileName],
     options: tsCompilerOptions(),
@@ -30,9 +36,9 @@ export default function compileTypeScript(fileName: string, fileContents: string
     if (diagnostic.file) {
       const { line, character } = getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start!);
       const message = flattenDiagnosticMessageText(diagnostic.messageText, "\n");
-      console.log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+      logger.info(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
     } else {
-      console.log(flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
+      logger.info(flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
     }
   }
 

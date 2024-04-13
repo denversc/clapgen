@@ -1,10 +1,12 @@
 import * as ts from "typescript";
 
-import { MonotonicTimer, } from "../lib/monotonic_timer";
-import { logger } from "../lib/logging";
+import { MonotonicTimer } from "../lib/monotonic_timer";
+import { getLogger } from "../lib/platform";
 import type { ParsedCommandLine, FormatDiagnosticsHost, CreateProgramOptions } from "typescript";
 
 export function transpile(): void {
+  const logger = getLogger();
+
   logger.info("TypeScript compilation starting");
   const timer = new MonotonicTimer();
 
@@ -42,7 +44,6 @@ export function transpile(): void {
 
 function loadTsConfig(host: FormatDiagnosticsHost): ParsedCommandLine {
   const tsConfigFilePath = "tsconfig.rollup.json";
-  logger.info(`Loading ${tsConfigFilePath}`);
 
   const result = ts.readConfigFile(tsConfigFilePath, ts.sys.readFile);
   if (result.error) {

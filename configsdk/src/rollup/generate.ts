@@ -4,8 +4,8 @@ import { statSync } from "node:fs";
 import { join } from "node:path";
 import rollup from "rollup";
 
-import { MonotonicTimer, } from "../lib/monotonic_timer";
-import { logger } from "../lib/logging";
+import { MonotonicTimer } from "../lib/monotonic_timer";
+import { getLogger } from "../lib/platform";
 
 export interface GenerateOptions {
   inputOptions(): InputOptions;
@@ -13,6 +13,7 @@ export interface GenerateOptions {
 }
 
 export async function generate(options: GenerateOptions): Promise<void> {
+  const logger = getLogger();
   const inputOptions = options.inputOptions();
   const outputOptions = options.outputOptions();
 
@@ -33,6 +34,7 @@ export async function generate(options: GenerateOptions): Promise<void> {
 }
 
 function logOutput(output: RollupOutput, elapsedTime: string): void {
+  const logger = getLogger();
   if (output.output.length === 0) {
     logger.success(`Generated 0 files in ${elapsedTime}`);
   } else if (output.output.length === 1) {

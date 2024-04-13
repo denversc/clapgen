@@ -4,9 +4,7 @@
     "types": ["node"]
   },
 
-  "references": [
-    { "path": "../lib" }
-  ],
+  "references": [{ "path": "../lib" }, { "path": "../platform/node" }],
 
   "include": ["**/*"]
 }
