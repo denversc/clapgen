@@ -4,7 +4,8 @@ import { statSync } from "node:fs";
 import { join } from "node:path";
 import rollup from "rollup";
 
-import { MonotonicTimer, logger } from "./util";
+import { MonotonicTimer, } from "../lib/monotonic_timer";
+import { logger } from "../lib/logging";
 
 export interface GenerateOptions {
   inputOptions(): InputOptions;

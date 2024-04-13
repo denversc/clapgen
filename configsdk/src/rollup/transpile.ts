@@ -1,6 +1,7 @@
 import * as ts from "typescript";
 
-import { logger, MonotonicTimer } from "./util";
+import { MonotonicTimer, } from "../lib/monotonic_timer";
+import { logger } from "../lib/logging";
 import type { ParsedCommandLine, FormatDiagnosticsHost, CreateProgramOptions } from "typescript";
 
 export function transpile(): void {

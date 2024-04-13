@@ -1,16 +1,15 @@
 const clapgen_init = function clapgen_init(initOptions, ...unexpectedArguments) {
-  
+                                 
 
   class Argument {
+      flag;
       constructor(flag) {
           this.flag = flag;
       }
   }
 
   class Clapgen {
-      constructor() {
-          this._arguments = [];
-      }
+      _arguments = [];
       addArgument(flag) {
           const argument = new Argument(flag);
           this._arguments.push(argument);
@@ -39,4 +38,6 @@ const clapgen_init = function clapgen_init(initOptions, ...unexpectedArguments) 
 
   return clapgen;
 
+     
 }
+//# sourceMappingURL=sdk.js.map

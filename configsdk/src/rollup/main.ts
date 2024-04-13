@@ -3,7 +3,8 @@ import rollup from "rollup";
 import { cwd } from "node:process";
 
 import { parseArgs } from "./args";
-import { MonotonicTimer, logger } from "./util";
+import { MonotonicTimer, } from "../lib/monotonic_timer";
+import { logger } from "../lib/logging";
 import { generate } from "./generate";
 import * as sdk from "./sdk_options";
 import * as tscompiler from "./tscompiler_options";
